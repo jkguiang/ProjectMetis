@@ -1,0 +1,12 @@
+*.pyc
+*.pkl
+*.pyc
+*.json
+*.pcm
+*.tar.gz
+*.root
+*.db
+*.out
+*.so
+*.bak
+CMSSW_*/
