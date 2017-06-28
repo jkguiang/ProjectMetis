@@ -7,7 +7,7 @@ import LogParser as lp
 
 #Log File Functions:
 #Imports os, retrieves .out files
-def get_files(logdir, ftype):
+def get_log_files(logdir, ftype):
     import os
     
     #.log in .../logs, .err and .out in .../logs/std_logs
@@ -71,7 +71,7 @@ def plot_2DHeat(**kwargs):
     return
 
 #Plots 1D Histogram for a single logfile and key
-def plot_log_1DHist(logname, key):
+def plot_single_1DHist(logname, key):
     plot_1DHist(data = logname[key], bins = 20, xlabel = key)
     
     return
@@ -91,7 +91,7 @@ def plot_all_1DHist(logObjPile, key):
     return
 
 #Plots KEY data vs time as a heatmap plot
-def plot_key_vs_t_Heat(key):
+def plot_keyvst_Heat(key):
     timeLst = []
     dataLst = []
     for log in logObjPile:
@@ -113,10 +113,10 @@ def plot_key_vs_t_Heat(key):
 
 #Debugging operations
 if __name__ == "__main__":
-    filePile = get_files("/home/jguiang/ProjectMetis/log_files", ".out")
+    filePile = get_log_files("/home/jguiang/ProjectMetis/log_files", ".out")
     logObjPile = parse_log_files(filePile)
 
-    plot_key_vs_t_Heat("usr")
+    plot_keyvst_Heat("usr")
     
     #plot_key_vs_t_Heat("sys")
 
