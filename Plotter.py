@@ -6,10 +6,16 @@ import numpy as np
 import LogParser as lp
 
 #Log File Functions:
-#Imports os, retrieves .out files -> ONLY FOR DEBUGGING PURPOSES
-def get_log_files(logdir):
+#Imports os, retrieves .out files
+def get_files(logdir, ftype):
     import os
-
+    
+    #.log in .../logs, .err and .out in .../logs/std_logs
+    if ftype == ".log":
+        endpath = "/logs"
+    else:
+        endpath = "/logs/std_logs"
+    
     fPile = []
     dirLst = os.listdir(logdir)
     
@@ -17,10 +23,10 @@ def get_log_files(logdir):
         if d == "plots":
             continue
         else:
-            newdir = os.path.abspath(os.path.join(logdir, d)) + "/logs/std_logs"
+            newdir = (os.path.abspath(os.path.join(logdir, d)) + endpath)
             newdirLst = os.listdir(newdir) 
             for f in newdirLst:
-                if f.endswith(".out"):
+                if f.endswith(ftype):
                     fPile.append(os.path.abspath(os.path.join(newdir, f)))
                 
     return fPile
@@ -107,7 +113,7 @@ def plot_key_vs_t_Heat(key):
 
 #Debugging operations
 if __name__ == "__main__":
-    filePile = get_log_files("/home/jguiang/ProjectMetis/log_files")
+    filePile = get_files("/home/jguiang/ProjectMetis/log_files", ".out")
     logObjPile = parse_log_files(filePile)
 
     plot_key_vs_t_Heat("usr")
