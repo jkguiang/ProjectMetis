@@ -7,22 +7,21 @@ import LogParser as lp
 
 #Log File Functions:
 #Imports os, retrieves .out files -> ONLY FOR DEBUGGING PURPOSES
-def get_log_files():
+def get_log_files(logdir):
     import os
-    
-    os.chdir("log_files")
 
     fPile = []
-    dirLst = os.listdir(os.curdir)
+    dirLst = os.listdir(logdir)
     
     for d in dirLst:
         if d == "plots":
             continue
         else:
-            newdir = os.listdir(d + "/logs/std_logs") 
-            for f in newdir:
+            newdir = os.path.abspath(os.path.join(logdir, d)) + "/logs/std_logs"
+            newdirLst = os.listdir(newdir) 
+            for f in newdirLst:
                 if f.endswith(".out"):
-                    fPile.append(os.path.dirname(os.path.abspath(f))+"/"+d+"/logs/std_logs/"+f)
+                    fPile.append(os.path.abspath(os.path.join(newdir, f)))
                 
     return fPile
 
@@ -108,7 +107,7 @@ def plot_key_vs_t_Heat(key):
 
 #Debugging operations
 if __name__ == "__main__":
-    filePile = get_log_files()
+    filePile = get_log_files("/home/jguiang/ProjectMetis/log_files")
     logObjPile = parse_log_files(filePile)
 
     plot_key_vs_t_Heat("usr")
