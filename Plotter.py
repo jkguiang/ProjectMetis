@@ -61,7 +61,7 @@ def get_std_dev(data):
     counter = 0
     sdLst = []
     for num in data:
-        stdDev.append((float(num) - float(mean))^2)
+        sdLst.append((float(num) - float(mean))*(float(num) - float(mean)))
         counter += 1
 
     sdSum = 0
@@ -93,25 +93,18 @@ def get_data_1D(logObjPile, key):
             pass
 
     return lst
-    
 
 def get_data_2D(logObjPile, xkey, ykey):
     xLst = []
     yLst = []
-    for log in logObjPile:
-        try:
-            if xkey == "epoch":
-                xLst = get_zeroed_times(logObjPile)
-            else:
-                for pnt in logObjPile[log][xkey]:
-                    xLst.append(float(pnt))
-            if ykey == "epoch":
-                yLst = get_zeroed_times(logObjPile)
-            else:
-                for pnt in logObjPile[log][ykey]:
-                    yLst.append(float(pnt))
-        except (KeyError, IndexError) as error:
-            pass
+    if xkey == "epoch":
+        xLst = get_zeroed_times(logObjPile)
+    else:
+        xLst = get_data_1D(logObjPile, xkey)
+    if ykey == "epoch":
+        yLst = get_zeroed_times(logObjPile)
+    else:
+        yLst = get_data_1D(logObjPile, ykey)
 
     return xLst, yLst
 
@@ -147,38 +140,64 @@ def plot_2DHist(logObjPile, **kwargs):
 def plot_Profile(logObjPile, **kwargs):
     #Get data
     x, y = get_data_2D(logObjPile, kwargs.get("xkey", ""), kwargs.get("ykey", ""))
+    eToggle = kwargs.get("eToggle", 1)
+    hToggle = kwargs.get("hToggle", 1)
 
-    #Builds graph bins: each x value corresponds to some list of y values to be averaged
+    #Build graph bins: each x value corresponds to some list of y values to be averaged
     xbins = {}
     for num in x:
         xbins[num] = []
 
-    #Pile x values into bins
+    #Pile x-values into bins
     counter = 0
     for num in y:
         xbins[x[counter]].append(num)
+        counter += 1
  
-    #Builds yerrDict bins, gets mean of y-values in xbins
-    yerrDict = {}
-    for xb in xbins:
-        yerr[xb] = get_std_dev(xbins[xb])
-        xbins[xb] = get_mean(xbins[xb])
+    if eToggle == 1 or eToggle == None:
+        #Builds yerrDict bins, get mean of y-values in xbins
+        yerrDict = {}
+        for xb in xbins:
+            yerrDict[xb] = get_std_dev(xbins[xb])
+            xbins[xb] = get_mean(xbins[xb])
 
-    #Build final data sets
-    x = []
-    y = []
-    yerr = []
-    for xb in xbins:
-        y.append(xbins[xb])
-        x.append(xb)
-        yerr.append(yerrDict[xb])
+        #Build final data sets
+        x = []
+        y = []
+        yerr = []
+        for xb in xbins:
+            y.append(xbins[xb])
+            x.append(xb)
+            yerr.append(yerrDict[xb])
+        plt.errorbar(x, y, yerr, fmt = ' ')
 
-    plt.errorbar(x, y, yerr)
+    else:
+        #get mean of y-values in xbins:
+        for xb in xbins:
+            xbins[xb] = get_mean(xbins[xb])
+
+        #build final data sets
+        x = []
+        y = []
+        for xb in xbins:
+            y.append(xbins[xb])
+            x.append(xb)
+        if hToggle == 1 or hToggle == None:
+            plt.plot(x, y, 'b.')
+        else:
+            #Import Colors
+            from matplotlib.colors import LogNorm    
+            #Create Heatmap
+            plt.hist2d(x, y, bins = 100, norm = LogNorm())
+            #Plot Heatmap
+            plt.colorbar()
+
     plt.title(kwargs.get("title", "Profile"))
     plt.xlabel(kwargs.get("xlabel",""))
     plt.ylabel(kwargs.get("ylabel",""))
 
     plt.show()
+
     return
     
 
@@ -192,5 +211,5 @@ def plot_single_1DHist(logname, key):
 if __name__ == "__main__":
     fPile = get_log_files("/home/jguiang/ProjectMetis/log_files", ".out")
     logObjPile = parse_log_files(fPile)
-    
-    plot_Profile(logObjPile, xkey = "epoch", ykey = "usr")
+ 
+    plot_Profile(logObjPile, xkey = "epoch", ykey = "usr", eToggle = 0, hToggle = 0)

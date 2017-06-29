@@ -1,4 +1,3 @@
-#Other imports
 import LogParser as lp
 import Plotter as plotter
 
@@ -49,28 +48,38 @@ def write_path_memory(fpath, ftype):
     return
 
 def get_plot_param(param):
+    eToggle = None
+
     counter = 0
     for p in param:
         if "\"" in p:
             p = p.split("\"")[1]
         else:
-            if p == "Bins":
+            if p == "Errorbar":
                 try:
                     nextP = param[counter + 1]
                     if ")" in nextP:
                         nextP = nextP.split(")")[0]
-                    bins = int(nextP)
+                    eToggle = nextP.split("\"")[1]
+                    if eToggle == "on":
+                        eToggle = None
+                    elif eToggle == "off":
+                        eToggle = 0
+                    else:
+                        print("Error: \"Errorbar\" only takes argument \"on\" or \"off\"")
                     counter += 1
                 except IndexError:
-                    print("Error: expected argument after \"Bins\"")
+                    print("Error: expected argument after \"Errorbar\"")
                     return
 
-    return pltType, bins
+    return eToggle
 
 def print_help_info():
     print("\n*    *    *    *    *    *    *    *    *    *    *    *    *    *    *    *")
     print("Plotters:")
     print("    plot->2DHist(\"xkey\", \"ykey\")")
+    print("    plot->HeatProfile(\"xkey\", \"ykey\"")
+    print("    plot->Profile(\"xkey\", \"ykey\", \"Errorbar\", \"on/off\" (default on)")
     print("    plot->1DHist(\"xkey\")")
     print("Getters:")
     print("    get->keys:")
@@ -89,6 +98,8 @@ def plot_interface_intrp(funct, param, logObjPile):
     Custom functions:
         Plotters:
             plot->2DHist("xkey", "ykey")
+            plot->HeatProfile("xkey", "ykey")
+            plot->Profile("xkey", "ykey", "ErrorbarsDeclaration", "on/off" (default on))
             plot->1DHist("xkey")
 
         Getters:
@@ -104,18 +115,24 @@ def plot_interface_intrp(funct, param, logObjPile):
     if funct[0] == "plot":
         try:
             if funct[1] == "2DHist":
-                xdata = param[0].split("\"")[1]
-                ydata = param[1].split("\"")[1]
-                if xdata == "epoch":
-                    plotter.plot_keyvst_2DHist(logObjPile, ydata)
-                    return
-                else:
-                    plotter.plot_all_2DHist(logObjPile, xdata, ydata)
-                    return
-
+                x = param[0].split("\"")[1]
+                y = param[1].split("\"")[1]
+                plotter.plot_2DHist(logObjPile, xkey = x, ykey = y)
+                return
+            if funct[1] == "HeatProfile":
+                x = param[0].split("\"")[1]
+                y = param[1].split("\"")[1]
+                plotter.plot_Profile(logObjPile, xkey = x, ykey = y, xlabel = x, ylabel = ("Average " + y), eToggle = 0, hToggle = 0)
+                return
+            elif funct[1] == "Profile":
+                x = param[0].split("\"")[1]
+                y = param[1].split("\"")[1]
+                e = get_plot_param(param)
+                plotter.plot_Profile(logObjPile, xkey = x, ykey = y, xlabel = x, ylabel = ("Average " + y), eToggle = e)
+                return
             elif funct[1] == "1DHist":
-                xdata = param[0].split("\"")[1]
-                plotter.plot_all_1DHist(logObjPile, xdata)
+                x = param[0].split("\"")[1]
+                plotter.plot_1DHist(logObjPile, xkey = x)
                 return
         except IndexError:
             print("Error: too few arguments provided")
@@ -157,10 +174,9 @@ def custom_plot_interface(inpMark, logObjPile):
         
         if custPlot == ".q":
             return
-
         elif custPlot == "help":
             print_help_info()
-        
+
         else:
             try:
                 splitInp = custPlot.split("(")
@@ -178,8 +194,8 @@ def secondary_plot_interface(inpMark, logObjPile):
     print("\n*    *    *    *    *    *    *    *    *    *    *    *    *    *    *    *")
     print("Enter the letter of desired plot or \'custom\' for custom plot. Enter \'help\' for supported custom functions.\n")
     print("Premade Plots:")
-    plots = {"a":"User CPU Usage vs. Time (2D Heatmap)", "b":"System CPU Usage vs. Time (2D Heatmap)"}
-    orderedkeys = ["a","b"]
+    plots = {"a":"User CPU Usage vs. Time (2DHist)", "b":"System CPU Usage vs. Time (2DHist)", "c":"Idl CPU usage vs. Time (2DHist)", "d":"Average User CPU usage vs. Time (Profile)", "e":"Average System CPU Usage vs. Time (Profile)"}
+    orderedkeys = ["a","b","c", "d", "e"]
     for key in orderedkeys:
         print(key + ". " + plots[key])
     print("*    *    *    *    *    *    *    *    *    *    *    *    *    *    *    *\n")
@@ -196,9 +212,15 @@ def secondary_plot_interface(inpMark, logObjPile):
             return
         elif usrInp in plots.keys():
             if usrInp == "a":
-                plotter.plot_keyvst_Heat(logObjPile, "usr", plots["a"])
+                plotter.plot_2DHist(logObjPile, xkey = "epoch", ykey = "usr", title = plots["a"])
             elif usrInp == "b":
-                plotter.plot_keyvst_Heat(logObjPile, "sys", plots["b"])
+                plotter.plot_2DHist(logObjPile, xkey = "epoch", ykey = "sys", title = plots["b"])
+            elif usrInp == "c":
+                plotter.plot_2DHist(logObjPile, xkey = "epoch", ykey = "idl", title = plots["c"])
+            elif usrInp == "d":
+                plotter.plot_Profile(logObjPile, xkey = "epoch", ykey = "usr", title = plots["d"])
+            elif usrInp == "e":
+                plotter.plot_Profile(logObjPile, xkey = "epoch", ykey = "sys", title = plots["e"])
 
         else:
             print("Error: invalid input")
