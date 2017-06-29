@@ -53,7 +53,7 @@ def plot_1DHist(**kwargs):
     
     return
 
-def plot_2DHeat(**kwargs):
+def plot_2DHist(**kwargs):
     #Import Colors
     from matplotlib.colors import LogNorm    
 
@@ -76,7 +76,7 @@ def plot_single_1DHist(logname, key):
     
     return
 
-#Plots 1D Histogram for all logfiles for a particular key
+#Plots 1D Histogram over all logfiles for a particular key
 def plot_all_1DHist(logObjPile, key):
     lst = []
     for log in logObjPile:
@@ -86,12 +86,30 @@ def plot_all_1DHist(logObjPile, key):
         except KeyError:
             pass
 
-    plot_1DHist(data = lst, bins = 20, xlabel = key)
+    plot_1DHist(data = lst, xlabel = key)
 
     return
 
+#Plots 2D Histogram over all logfiles for two particular keys
+def plot_all_2DHist(logObjPile, xkey, ykey):
+    xLst = []
+    yLst = []
+    for log in logObjPile:
+        try:
+            for pnt in logObjPile[log][xkey]:
+                xdata.append(float(pnt))
+            for pnt in logObjPile[log][ykey]:
+                ydata.append(float(pnt))
+        except (KeyError, IndexError) as error:
+            pass
+
+    if len(xdata) == len(ydata):
+        plot_2DHist(xdata = xLst, ydata = yLst, xlabel = xkey, ylabel = ykey, title = (ykey + " vs " + xkey))
+    
+    return
+
 #Plots data (from key) vs time (from 'epoch') as a heatmap plot
-def plot_keyvst_Heat(logObjPile, key, pltTitle):
+def plot_keyvst_2DHist(logObjPile, key):
     timeLst = []
     dataLst = []
     for log in logObjPile:
@@ -105,7 +123,7 @@ def plot_keyvst_Heat(logObjPile, key, pltTitle):
             pass
 
     if len(timeLst) == len(dataLst):
-        plot_2DHeat(xdata = timeLst, ydata = dataLst, xlabel = 'time', ylabel = key, title = pltTitle)
+        plot_2DHist(xdata = timeLst, ydata = dataLst, xlabel = 'time', ylabel = key, title = key)
     else:
         print('Error: x and y data sets are not the same size')
 

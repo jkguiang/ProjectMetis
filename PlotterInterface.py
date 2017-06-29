@@ -54,14 +54,7 @@ def get_plot_param(param):
         if "\"" in p:
             p = p.split("\"")[1]
         else:
-            if p == "TypeDeclaration":
-                try:
-                    pltType = param[counter + 1].split("\"")[1]
-                    counter += 1
-                except IndexError:
-                    print("Error: expected argument after \"Type\"")
-                    return
-            elif p == "Bins":
+            if p == "Bins":
                 try:
                     nextP = param[counter + 1]
                     if ")" in nextP:
@@ -74,12 +67,29 @@ def get_plot_param(param):
 
     return pltType, bins
 
+def print_help_info():
+    print("\n*    *    *    *    *    *    *    *    *    *    *    *    *    *    *    *")
+    print("Plotters:")
+    print("    plot->2DHist(\"xkey\", \"ykey\")")
+    print("    plot->1DHist(\"xkey\")")
+    print("Getters:")
+    print("    get->keys:")
+    print("        get->keys(\"filename\") = logObjPile[\"filename\"].keys()")
+    print("        get->keys() = logObjPile[\"logfile0\"].keys)")
+    print("    get->files:")
+    print("        where A and B are integers in the interval [0,N]")
+    print("         get->files(A, B) = \"logfileA\", \"logfileA+1\", ... , \"logfileB\"")
+    print("         get->files() = \"logfile0\", \"logfile1\", ... , \"logfileN\"")
+    print("*    *    *    *    *    *    *    *    *    *    *    *    *    *    *    *\n")
+
+    return
+
 def plot_interface_intrp(funct, param, logObjPile):
     '''
     Custom functions:
         Plotters:
-            plot->2DHist("xkey", "ykey", "TypeDeclaration", "type", "Bins", bins)
-            plot->1DHist("xkey", "BinsDeclaration", bins)
+            plot->2DHist("xkey", "ykey")
+            plot->1DHist("xkey")
 
         Getters:
             get->keys:
@@ -92,43 +102,98 @@ def plot_interface_intrp(funct, param, logObjPile):
     '''
 
     if funct[0] == "plot":
-        pltType = 0
-        bins = 100
-        if funct[1] == "2DHist":
-            xdata = param[0]
-            ydata = param[1]
-            pltType, bins = get_plot_param(param)
-            if pltType == "heat":
-                plotter.plot_2DHeat(xdata, ydata, bins)
+        try:
+            if funct[1] == "2DHist":
+                xdata = param[0].split("\"")[1]
+                ydata = param[1].split("\"")[1]
+                if xdata == "epoch":
+                    plotter.plot_keyvst_2DHist(logObjPile, ydata)
+                    return
+                else:
+                    plotter.plot_all_2DHist(logObjPile, xdata, ydata)
+                    return
 
-        if funct[1] == "1DHist":
-            xdata = param[0]
-            pltType, bins = get_plot_param(param)
-            plotter.plot_1DHist(xdata, bins)
+            elif funct[1] == "1DHist":
+                xdata = param[0].split("\"")[1]
+                plotter.plot_all_1DHist(logObjPile, xdata)
+                return
+        except IndexError:
+            print("Error: too few arguments provided")
+            return
+
+    if funct[0] == "get":
+        param = param[0].split("\"")
+        if funct[1] == "keys":
+            try:
+                print(logObjPile[param[1]].keys())
+                return
+            except IndexError:
+                print(logObjPile["logfile0"].keys())
+                return
+          
+        elif funct[1] == "files":
+            try:
+                logLst = []
+                start = param[0]
+                end = param[1].split(")")[0]
+                
+                for log in logObjPile:
+                    if counter > end:
+                        print(logLst)
+                        return
+                    elif counter >= start:
+                        logLst.append(log)
+                    counter += 1
+            except IndexError:
+                logLst = []
+                for log in logObjPile:
+                    logLst.append(log)
+                print(logLst)
+                return
+
+def custom_plot_interface(inpMark, logObjPile):
+    while True:
+        custPlot = input(inpMark)
+        
+        if custPlot == ".q":
+            return
+
+        elif custPlot == "help":
+            print_help_info()
+        
+        else:
+            try:
+                splitInp = custPlot.split("(")
+                funct = splitInp[0].split("->")
+                param = splitInp[1].split(",")
+
+                plot_interface_intrp(funct, param, logObjPile)
+                continue
+            except IndexError:
+                print("Error: check arguments")
+                continue
 
 def secondary_plot_interface(inpMark, logObjPile):
     print("Log files compiled successfully")
     print("\n*    *    *    *    *    *    *    *    *    *    *    *    *    *    *    *")
-    print("Please enter the letter of desired plot or \'custom\' for custom plot. Enter \'help\' for supported custom functions.\n")
+    print("Enter the letter of desired plot or \'custom\' for custom plot. Enter \'help\' for supported custom functions.\n")
     print("Premade Plots:")
     plots = {"a":"User CPU Usage vs. Time (2D Heatmap)", "b":"System CPU Usage vs. Time (2D Heatmap)"}
     orderedkeys = ["a","b"]
     for key in orderedkeys:
         print(key + ". " + plots[key])
-    print("Custom\n")
     print("*    *    *    *    *    *    *    *    *    *    *    *    *    *    *    *\n")
    
     while True: 
         usrInp = input(inpMark)
         if usrInp == ".q":
             return
+        elif usrInp == "help":
+            print_help_info()
         elif usrInp == "custom" or usrInp == "Custom":
-            custPlot = input(inpMark)
-            splitInp = custPlot.split("(")
-            funct = splitInp[0].split("->")
-            param = splitInp[1].split(",")
-
-            usr_inp_intrp(funct, param, logObjPile)
+            print("Custom plot:")
+            custom_plot_interface(inpMark, logObjPile)
+            return
         elif usrInp in plots.keys():
             if usrInp == "a":
                 plotter.plot_keyvst_Heat(logObjPile, "usr", plots["a"])
@@ -136,6 +201,7 @@ def secondary_plot_interface(inpMark, logObjPile):
                 plotter.plot_keyvst_Heat(logObjPile, "sys", plots["b"])
 
         else:
+            print("Error: invalid input")
             continue
             
 def main_plot_interface(inpMark, goodtypes, mempath, memtype):
@@ -178,7 +244,7 @@ def main_user_interface():
     inpMark = ">> "
     goodtypes = {".log", ".err", ".out"}
 
-    print("Plotter v1.0")
+    print("Plotter v2.0")
     print("Enter \'new\' to open new directory, \'cont\' to use information from last session (automatically starts a new session if no history in memory), or \'.q\' to quit")
     while True:
         usrInp = input(inpMark)
