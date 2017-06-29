@@ -1,6 +1,7 @@
 #Plotting Libraries
 import matplotlib.pyplot as plt
 import numpy as np
+import math as math
 
 #Other imports
 import LogParser as lp
@@ -43,22 +44,96 @@ def parse_log_files(fPile):
     return logObjPile
 
 #Plotting Functions
-def plot_1DHist(**kwargs):
-    plt.hist(kwargs.get("data", 0), kwargs.get("bins", 200))
+#Takes data as list, returns mean as float
+def get_mean(data):
+    counter = 0
+    nSum = 0
+    for num in data:
+        nSum += num
+        counter += 1
+
+    return (float(nSum)/float(counter))
+
+#Takes data as list, returns standard deviation as float
+def get_std_dev(data):
+    mean = get_mean(data)    
+    
+    counter = 0
+    sdLst = []
+    for num in data:
+        stdDev.append((float(num) - float(mean))^2)
+        counter += 1
+
+    sdSum = 0
+    for num in sdLst:
+        sdSum += num
+    sdSum = (sdSum/counter)
+
+    return math.sqrt(sdSum)
+            
+def get_zeroed_times(logObjPile):
+    timeLst = []
+    for log in logObjPile:
+        try:
+            tstart = logObjPile[log]['epoch'][0]
+            for pnt in logObjPile[log]['epoch']:
+                timeLst.append(float(pnt) - float(tstart))
+        except (KeyError, IndexError) as error:
+            pass
+
+    return timeLst
+
+def get_data_1D(logObjPile, key):
+    lst = []
+    for log in logObjPile:
+        try:
+            for pnt in logObjPile[log][key]:
+                lst.append(float(pnt))
+        except (KeyError, IndexError) as error:
+            pass
+
+    return lst
+    
+
+def get_data_2D(logObjPile, xkey, ykey):
+    xLst = []
+    yLst = []
+    for log in logObjPile:
+        try:
+            if xkey == "epoch":
+                xLst = get_zeroed_times(logObjPile)
+            else:
+                for pnt in logObjPile[log][xkey]:
+                    xLst.append(float(pnt))
+            if ykey == "epoch":
+                yLst = get_zeroed_times(logObjPile)
+            else:
+                for pnt in logObjPile[log][ykey]:
+                    yLst.append(float(pnt))
+        except (KeyError, IndexError) as error:
+            pass
+
+    return xLst, yLst
+
+def plot_1DHist(logObjPile, **kwargs):
+    x = get_data_1D(logObjPile, kwargs.get("xkey", ""))
+    plt.hist(x, kwargs.get("bins", 200))
     plt.title(kwargs.get("title", "1D Histogram"))
     plt.xlabel(kwargs.get("xlabel",""))
     plt.ylabel(kwargs.get("ylabel",""))
     
     plt.show()
-    
     return
 
-def plot_2DHist(**kwargs):
+def plot_2DHist(logObjPile, **kwargs):
+    #Get data
+    x, y = get_data_2D(logObjPile, kwargs.get("xkey", ""), kwargs.get("ykey", ""))
+
     #Import Colors
     from matplotlib.colors import LogNorm    
 
     #Create Heatmap
-    plt.hist2d(kwargs.get("xdata", 0), kwargs.get("ydata", 0), bins = kwargs.get("bins", 100), norm = LogNorm())
+    plt.hist2d(x, y, bins = kwargs.get("bins", 100), norm = LogNorm())
 
     #Plot Heatmap
     plt.colorbar()
@@ -66,9 +141,46 @@ def plot_2DHist(**kwargs):
     plt.xlabel(kwargs.get("xlabel",""))
     plt.ylabel(kwargs.get("ylabel",""))
 
-    plt.show()
-    
+    plt.show()    
     return
+
+def plot_Profile(logObjPile, **kwargs):
+    #Get data
+    x, y = get_data_2D(logObjPile, kwargs.get("xkey", ""), kwargs.get("ykey", ""))
+
+    #Builds graph bins: each x value corresponds to some list of y values to be averaged
+    xbins = {}
+    for num in x:
+        xbins[num] = []
+
+    #Pile x values into bins
+    counter = 0
+    for num in y:
+        xbins[x[counter]].append(num)
+ 
+    #Builds yerrDict bins, gets mean of y-values in xbins
+    yerrDict = {}
+    for xb in xbins:
+        yerr[xb] = get_std_dev(xbins[xb])
+        xbins[xb] = get_mean(xbins[xb])
+
+    #Build final data sets
+    x = []
+    y = []
+    yerr = []
+    for xb in xbins:
+        y.append(xbins[xb])
+        x.append(xb)
+        yerr.append(yerrDict[xb])
+
+    plt.errorbar(x, y, yerr)
+    plt.title(kwargs.get("title", "Profile"))
+    plt.xlabel(kwargs.get("xlabel",""))
+    plt.ylabel(kwargs.get("ylabel",""))
+
+    plt.show()
+    return
+    
 
 #Plots 1D Histogram for a single logfile and key
 def plot_single_1DHist(logname, key):
@@ -76,60 +188,9 @@ def plot_single_1DHist(logname, key):
     
     return
 
-#Plots 1D Histogram over all logfiles for a particular key
-def plot_all_1DHist(logObjPile, key):
-    lst = []
-    for log in logObjPile:
-        try:
-            for pnt in logObjPile[log][key]:
-                lst.append(float(pnt))
-        except KeyError:
-            pass
-
-    plot_1DHist(data = lst, xlabel = key)
-
-    return
-
-#Plots 2D Histogram over all logfiles for two particular keys
-def plot_all_2DHist(logObjPile, xkey, ykey):
-    xLst = []
-    yLst = []
-    for log in logObjPile:
-        try:
-            for pnt in logObjPile[log][xkey]:
-                xdata.append(float(pnt))
-            for pnt in logObjPile[log][ykey]:
-                ydata.append(float(pnt))
-        except (KeyError, IndexError) as error:
-            pass
-
-    if len(xdata) == len(ydata):
-        plot_2DHist(xdata = xLst, ydata = yLst, xlabel = xkey, ylabel = ykey, title = (ykey + " vs " + xkey))
-    
-    return
-
-#Plots data (from key) vs time (from 'epoch') as a heatmap plot
-def plot_keyvst_2DHist(logObjPile, key):
-    timeLst = []
-    dataLst = []
-    for log in logObjPile:
-        try:
-            tstart = logObjPile[log]['epoch'][0]
-            for pnt in logObjPile[log][key]:
-                timeLst.append(float(pnt))
-            for pnt in logObjPile[log]['epoch']:
-                dataLst.append(float(pnt) - float(tstart))
-        except (KeyError, IndexError) as error:
-            pass
-
-    if len(timeLst) == len(dataLst):
-        plot_2DHist(xdata = timeLst, ydata = dataLst, xlabel = 'time', ylabel = key, title = key)
-    else:
-        print('Error: x and y data sets are not the same size')
-
-    return
-
 #Debugging operations
 if __name__ == "__main__":
     fPile = get_log_files("/home/jguiang/ProjectMetis/log_files", ".out")
     logObjPile = parse_log_files(fPile)
+    
+    plot_Profile(logObjPile, xkey = "epoch", ykey = "usr")
