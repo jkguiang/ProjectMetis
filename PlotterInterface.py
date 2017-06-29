@@ -236,7 +236,7 @@ def main_plot_interface(inpMark, goodtypes, mempath, memtype):
         return
 
     else:
-        print("Please enter the log file directory's full path. (i.e. /home/usr/log_file_dir)")
+        print("Enter the log file directory's full path. (i.e. /home/usr/log_file_dir)")
         while True:
             fpath = input(inpMark)
 
@@ -244,12 +244,23 @@ def main_plot_interface(inpMark, goodtypes, mempath, memtype):
                 return        
 
             elif is_valid_path(fpath):
-                print("Please enter the log files' file type. (Accepted file types: .log, .err, .out)")
+                print("Enter the log files' file type. (Accepted file types: .log, .err, .out)")
                 ftype = input(inpMark)
                 if ftype == ".q":
                     return
                 elif ftype in goodtypes and contains_log_files(fpath, ftype):
-                    write_path_memory(fpath, ftype)
+                    while True:
+                        print("Save directory path and file type (Note: saving will write PlotterMemory.txt to local directory)? y/n")
+                        saveInp = input(inpMark)
+                        if saveInp == ".q":
+                            return
+                        elif saveInp == "y" or saveInp == "Y":
+                            write_path_memory(fpath, ftype)
+                            break
+                        elif saveInp == "n" or saveInp == "N":
+                            break
+                        else:
+                            print("Error: invalid input")
                     print("Compiling log files...")
                     fPile = plotter.get_log_files(fpath, ftype)
                     logObjPile = plotter.parse_log_files(fPile)
