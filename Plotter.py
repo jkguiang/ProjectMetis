@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import math
 import scipy.stats
+from tqdm import *
 
 #Other imports
 import LogParser as lp
@@ -38,7 +39,7 @@ def parse_log_files(fPile):
     logObjPile = {}
     counter = 0
 
-    for fpath in fPile:
+    for fpath in tqdm(fPile):
         logObjPile[counter] = lp.log_parser(fpath)
         counter += 1
 

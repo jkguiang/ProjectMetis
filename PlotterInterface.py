@@ -1,5 +1,6 @@
 import LogParser as lp
 import Plotter as plotter
+import readline
 
 #Various functions for executing user interface
 def is_valid_path(path):
@@ -145,7 +146,7 @@ def custom_plot_interface(inpMark, logObjPile):
                 continue
 
 def secondary_plot_interface(inpMark, logObjPile):
-    print("Log files compiled successfully")
+    print("\nLog files compiled successfully")
     print("\n-    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -")
     print("Enter the letter of desired plot or \'custom\' for custom plot. Enter \'help\' for supported custom functions.\n")
     print("Premade Plots:")
