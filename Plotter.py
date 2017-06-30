@@ -108,6 +108,53 @@ def get_data_2D(logObjPile, xkey, ykey):
 
     return xLst, yLst
 
+def get_averaged_bins(x, y, bins):
+    binSize = float(max(x))/bins
+
+    #Build x bins
+    xbins = {}
+    counter = 1
+    while counter <= bins:
+        xbins[binSize*counter] = []
+        counter += 1
+    
+    #Populate bins with y-values
+    counter = 0
+    for b in xbins:
+        counter = 0
+        print(len(x))
+        for num in x:
+            if num <= b:
+                xbins[b].append(y[counter])
+                x.remove(num)
+                y.remove(y[counter])
+            counter += 1
+    
+    #Get list of mean of y-values in each bin to be graphed and standard deviation for errorbar
+    #Build list of xbins keys to be graphed
+    yerr = []
+    x = []
+    y = []
+    for b in xbins:
+        x.append(b)
+        y.append(get_mean(xbins[b]))
+        yerr.append(get_std_dev(xbins[b]))
+
+    return x, y, yerr
+
+def TESTPLOT(logObjPile, xkey, ykey):
+    x1, y1 = get_data_2D(logObjPile, xkey, ykey)
+    bins = 200
+
+    x, y, yerr = get_averaged_bins(x1, y1, bins)
+    plt.errorbar(x, y, yerr, fmt = ' ')
+    plt.title(kwargs.get("title", "TEST"))
+    plt.xlabel(kwargs.get("xlabel","TEST"))
+    plt.ylabel(kwargs.get("ylabel","TEST"))
+    
+     plt.show()
+     return
+    
 def plot_1DHist(logObjPile, **kwargs):
     x = get_data_1D(logObjPile, kwargs.get("xkey", ""))
     plt.hist(x, kwargs.get("bins", 200))
@@ -211,5 +258,7 @@ def plot_single_1DHist(logname, key):
 if __name__ == "__main__":
     fPile = get_log_files("/home/jguiang/ProjectMetis/log_files", ".out")
     logObjPile = parse_log_files(fPile)
- 
-    plot_Profile(logObjPile, xkey = "epoch", ykey = "usr", eToggle = 0, hToggle = 0)
+    TESTPLOT(logObjPile, "epoch", "usr") 
+
+
+    #plot_Profile(logObjPile, xkey = "epoch", ykey = "usr", eToggle = 0, hToggle = 0)
