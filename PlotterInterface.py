@@ -146,7 +146,7 @@ def custom_plot_interface(inpMark, logObjPile):
                 continue
 
 def secondary_plot_interface(inpMark, logObjPile):
-    print("\nLog files compiled successfully")
+    print("\nLog files compiled successfully!")
     print("\n-    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -")
     print("Enter the letter of desired plot or \'custom\' for custom plot. Enter \'help\' for supported custom functions.\n")
     print("Premade Plots:")
