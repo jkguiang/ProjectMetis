@@ -47,130 +47,85 @@ def write_path_memory(fpath, ftype):
     curfile.close()
     return
 
-def get_plot_param(param):
-    eToggle = None
-
-    counter = 0
-    for p in param:
-        if "\"" in p:
-            p = p.split("\"")[1]
-        else:
-            if p == "Errorbar":
-                try:
-                    nextP = param[counter + 1]
-                    if ")" in nextP:
-                        nextP = nextP.split(")")[0]
-                    eToggle = nextP.split("\"")[1]
-                    if eToggle == "on":
-                        eToggle = None
-                    elif eToggle == "off":
-                        eToggle = 0
-                    else:
-                        print("Error: \"Errorbar\" only takes argument \"on\" or \"off\"")
-                    counter += 1
-                except IndexError:
-                    print("Error: expected argument after \"Errorbar\"")
-                    return
-
-    return eToggle
-
 def print_help_info():
-    print("\n*    *    *    *    *    *    *    *    *    *    *    *    *    *    *    *")
+    print("\n-    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -")
     print("Plotters:")
     print("    plot->2DHist(\"xkey\", \"ykey\")")
-    print("    plot->HeatProfile(\"xkey\", \"ykey\"")
-    print("    plot->Profile(\"xkey\", \"ykey\", \"Errorbar\", \"on/off\" (default on)")
+    print("    plot->avgY2DHist(\"xkey\", \"ykey\")")
+    print("    plot->Profile(\"xkey\", \"ykey\")")
     print("    plot->1DHist(\"xkey\")")
     print("Getters:")
-    print("    get->keys:")
-    print("        get->keys(\"filename\") = logObjPile[\"filename\"].keys()")
-    print("        get->keys() = logObjPile[\"logfile0\"].keys)")
-    print("    get->files:")
-    print("        where A and B are integers in the interval [0,N]")
-    print("         get->files(A, B) = \"logfileA\", \"logfileA+1\", ... , \"logfileB\"")
-    print("         get->files() = \"logfile0\", \"logfile1\", ... , \"logfileN\"")
-    print("*    *    *    *    *    *    *    *    *    *    *    *    *    *    *    *\n")
+    print("    get->keys(\"index\") = logObjPile[0].keys()")
+    print("    get->len(\"arg\") = number of values for given argument")
+    print("    Arguments:")
+    print("    \"files\" -> number of compiled log files")
+    print("    \"keys\" -> number of data sets in each log file")
+    print("    \"any key from get->keys()\" -> size of data set corresponding to that particular key (Note: all data sets should be of equal size)")
+    print("\n-    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -\n")
 
     return
 
 def plot_interface_intrp(funct, param, logObjPile):
-    '''
-    Custom functions:
-        Plotters:
-            plot->2DHist("xkey", "ykey")
-            plot->HeatProfile("xkey", "ykey")
-            plot->Profile("xkey", "ykey", "ErrorbarsDeclaration", "on/off" (default on))
-            plot->1DHist("xkey")
-
-        Getters:
-            get->keys:
-                get->keys("filename") = logObjPile["filename"].keys()
-                get->keys() = logObjPile["logfile0"].keys
-            get->files:
-                where A and B are integers in the interval [0,N]
-                get->files(A, B) = "logfileA", "logfileA+1", ... , "logfileB"
-                get->files() = "logfile0", "logfile1", ... , "logfileN"
-    '''
 
     if funct[0] == "plot":
         try:
             if funct[1] == "2DHist":
                 x = param[0].split("\"")[1]
                 y = param[1].split("\"")[1]
-                plotter.plot_2DHist(logObjPile, xkey = x, ykey = y)
+                plotter.plot_2DHist(logObjPile, x, y, 100)
                 return
-            if funct[1] == "HeatProfile":
+            if funct[1] == "avgY2DHist":
                 x = param[0].split("\"")[1]
                 y = param[1].split("\"")[1]
-                plotter.plot_Profile(logObjPile, xkey = x, ykey = y, xlabel = x, ylabel = ("Average " + y), eToggle = 0, hToggle = 0)
+                plotter.plot_avgY2DHist(logObjPile, x, y, 100)
                 return
             elif funct[1] == "Profile":
                 x = param[0].split("\"")[1]
                 y = param[1].split("\"")[1]
                 e = get_plot_param(param)
-                plotter.plot_Profile(logObjPile, xkey = x, ykey = y, xlabel = x, ylabel = ("Average " + y), eToggle = e)
+                plotter.plot_Profile(logObjPile, x, y, 50)
                 return
             elif funct[1] == "1DHist":
                 x = param[0].split("\"")[1]
-                plotter.plot_1DHist(logObjPile, xkey = x)
+                plotter.plot_1DHist(logObjPile, x, 100)
                 return
         except IndexError:
             print("Error: too few arguments provided")
             return
 
-    if funct[0] == "get":
+    elif funct[0] == "get":
         param = param[0].split("\"")
         if funct[1] == "keys":
             try:
-                print(logObjPile[param[1]].keys())
+                print(logObjPile[int(param[1])].keys())
                 return
-            except IndexError:
-                print(logObjPile["logfile0"].keys())
+            except (IndexError, ValueError) as error:
+                print("Error: Invalid index")
+                print("Printing keys of 0th logfile:")
+                print(logObjPile[0].keys())
                 return
           
-        elif funct[1] == "files":
+        elif funct[1] == "len":
             try:
-                logLst = []
-                start = param[0]
-                end = param[1].split(")")[0]
-                
-                for log in logObjPile:
-                    if counter > end:
-                        print(logLst)
-                        return
-                    elif counter >= start:
-                        logLst.append(log)
-                    counter += 1
-            except IndexError:
-                logLst = []
-                for log in logObjPile:
-                    logLst.append(log)
-                print(logLst)
+                if param[1] == "files":
+                    print(len(logObjPile))
+                    return
+                elif param[1] == "keys":
+                    print(len(logObjPile[0].keys()))
+                    return
+                else:
+                    print(len(plotter.get_data_1D(logObjPile, param[1])))
+                    return
+            except (IndexError, ValueError, TypeError) as error:
+                print("Error: Invalid input")
                 return
+    else:
+        print("Error: Invalid input")
+        return
 
 def custom_plot_interface(inpMark, logObjPile):
     while True:
-        custPlot = input(inpMark)
+        custPlot = raw_input(inpMark)
         
         if custPlot == ".q":
             return
@@ -186,22 +141,22 @@ def custom_plot_interface(inpMark, logObjPile):
                 plot_interface_intrp(funct, param, logObjPile)
                 continue
             except IndexError:
-                print("Error: check arguments")
+                print("Error: Invalid input")
                 continue
 
 def secondary_plot_interface(inpMark, logObjPile):
     print("Log files compiled successfully")
-    print("\n*    *    *    *    *    *    *    *    *    *    *    *    *    *    *    *")
+    print("\n-    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -")
     print("Enter the letter of desired plot or \'custom\' for custom plot. Enter \'help\' for supported custom functions.\n")
     print("Premade Plots:")
     plots = {"a":"User CPU Usage vs. Time (2DHist)", "b":"System CPU Usage vs. Time (2DHist)", "c":"Idl CPU usage vs. Time (2DHist)", "d":"Average User CPU usage vs. Time (Profile)", "e":"Average System CPU Usage vs. Time (Profile)"}
     orderedkeys = ["a","b","c", "d", "e"]
     for key in orderedkeys:
         print(key + ". " + plots[key])
-    print("*    *    *    *    *    *    *    *    *    *    *    *    *    *    *    *\n")
+    print("\n-    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -    -\n")
    
     while True: 
-        usrInp = input(inpMark)
+        usrInp = raw_input(inpMark)
         if usrInp == ".q":
             return
         elif usrInp == "help":
@@ -212,15 +167,15 @@ def secondary_plot_interface(inpMark, logObjPile):
             return
         elif usrInp in plots.keys():
             if usrInp == "a":
-                plotter.plot_2DHist(logObjPile, xkey = "epoch", ykey = "usr", title = plots["a"])
+                plotter.plot_2DHist(logObjPile, "epoch", "usr", 100)
             elif usrInp == "b":
-                plotter.plot_2DHist(logObjPile, xkey = "epoch", ykey = "sys", title = plots["b"])
+                plotter.plot_2DHist(logObjPile, "epoch", "sys", 100)
             elif usrInp == "c":
-                plotter.plot_2DHist(logObjPile, xkey = "epoch", ykey = "idl", title = plots["c"])
+                plotter.plot_2DHist(logObjPile, "epoch", "idl", 100)
             elif usrInp == "d":
-                plotter.plot_Profile(logObjPile, xkey = "epoch", ykey = "usr", title = plots["d"])
+                plotter.plot_Profile(logObjPile, "epoch", "usr", 50)
             elif usrInp == "e":
-                plotter.plot_Profile(logObjPile, xkey = "epoch", ykey = "sys", title = plots["e"])
+                plotter.plot_Profile(logObjPile, "epoch", "sys", 50)
 
         else:
             print("Error: invalid input")
@@ -238,20 +193,20 @@ def main_plot_interface(inpMark, goodtypes, mempath, memtype):
     else:
         print("Enter the log file directory's full path. (i.e. /home/usr/log_file_dir)")
         while True:
-            fpath = input(inpMark)
+            fpath = raw_input(inpMark)
 
             if fpath == ".q":
                 return        
 
             elif is_valid_path(fpath):
                 print("Enter the log files' file type. (Accepted file types: .log, .err, .out)")
-                ftype = input(inpMark)
+                ftype = raw_input(inpMark)
                 if ftype == ".q":
                     return
                 elif ftype in goodtypes and contains_log_files(fpath, ftype):
                     while True:
                         print("Save directory path and file type (Note: saving will write PlotterMemory.txt to local directory)? y/n")
-                        saveInp = input(inpMark)
+                        saveInp = raw_input(inpMark)
                         if saveInp == ".q":
                             return
                         elif saveInp == "y" or saveInp == "Y":
@@ -280,7 +235,7 @@ def main_user_interface():
     print("Plotter v2.0")
     print("Enter \'new\' to open new directory, \'cont\' to use information from last session (automatically starts a new session if no history in memory), or \'.q\' to quit")
     while True:
-        usrInp = input(inpMark)
+        usrInp = raw_input(inpMark)
         if usrInp == ".q":
             break
         elif usrInp == "new":
