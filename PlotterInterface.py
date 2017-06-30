@@ -1,4 +1,3 @@
-import LogParser as lp
 import Plotter as plotter
 import readline
 

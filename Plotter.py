@@ -104,10 +104,10 @@ def get_data_2D(logObjPile, xkey, ykey):
 
     return xLst, yLst
     
-def plot_1DHist(logObjPile, title, xkey, pltbins):
+def plot_1DHist(logObjPile, xkey, pltbins):
     x = get_data_1D(logObjPile, xkey)
     plt.hist(x, pltbins)
-    set_graph_info(title, xlabel, ylabel) 
+    set_graph_info("1D Histogram", xkey, "") 
 
     return
 
