@@ -8,6 +8,27 @@ from tqdm import *
 #Other imports
 import LogParser as lp
 
+#Takes list of log file paths, outputs list of log file dictionaries -> {"key":[list of values]}
+def parse_log_files(fPile):
+    logObjPile = {}
+    counter = 0
+
+    for fpath in tqdm(fPile):
+        logObjPile[counter] = lp.log_parser(fpath)
+        counter += 1
+
+    return logObjPile
+
+#Takes list of log file paths, updates logObjPile dictionary
+def updt_log_dict(logObjPile, fPile)
+    counter = len(lobObjPile)
+    
+    for fpath in fPile:
+        logObjPile[counter] = lp.log_parser(fpath)
+        counter += 1
+    
+    return logObjPile
+
 #Log File Functions:
 #Imports os, retrieves .out files
 def get_log_files(logdir, ftype):
@@ -34,16 +55,21 @@ def get_log_files(logdir, ftype):
                 
     return fPile
 
-#Takes list of log file paths, outputs list of log file dictionaries -> {"key":[list of values]}
-def parse_log_files(fPile):
-    logObjPile = {}
-    counter = 0
+#Retrieve perinent files from "condor_jobs" key in json output
+#takes log dicionary, condor_jobs list, desired file type, and path to directry with log files
+def get_json_files(logObjPile, condor_jobs, ftype, usrpath):
+    fPile = []
+    
+    ftype = ("logfile_" + ftype.split(".")[1])
 
-    for fpath in tqdm(fPile):
-        logObjPile[counter] = lp.log_parser(fpath)
-        counter += 1
+    for log in condor_jobs:
+        try:
+            fpath = usrpath + log["ftype"].split("ProjectMetis/tasks")[1]
+            fPile.append(fpath)
+        except KeyError:
+            pass
 
-    return logObjPile
+    return updt_log_dict(logObjPile, fPile)
 
 #Plotting Functions
 #Sets plot title and axis labels, shows graph

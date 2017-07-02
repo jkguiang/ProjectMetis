@@ -2,11 +2,15 @@ import json
 import os
 import sys
 from pprint import pprint
+import Plotter as plotter
 
-with open("summary.json","r") as fhin:
+with open("/home/jguiang/ProjectMetis/log_files/summary.json","r") as fhin:
     data = json.load(fhin)
 summary = data["summary"]
 counts = data["counts"]
+
+#Initialize empty dictionary to be filled with log files/log info
+logObjDict = {}
 
 for dsname in summary.keys():
     print
@@ -24,21 +28,35 @@ for dsname in summary.keys():
             continue
 
         condor_jobs = job["condor_jobs"]
-        retries = max(0, len(condor_jobs)-1)
-        inputs = job["inputs"]
-        innames, innevents = zip(*inputs)
-        nevents = sum(innevents)
-        print "[{0}] Job {1} is not done. Retried {2} times.".format(dsname, iout, retries)
-        print "   --> {0} inputs with a total of {1} events".format(len(inputs),nevents)
-        if retries >= 1:
-            print "   --> Previous condor logs:"
-            for ijob in range(len(condor_jobs)-1):
-                outlog = condor_jobs[ijob]["logfile_out"]
-                errlog = condor_jobs[ijob]["logfile_err"]
-                print "       - {0}".format(errlog)
 
+        #Pass current log dictionary, original log file locations (job["condor jobs"]), desired log file type, and current log file location to plotter
+        logObjDict = plotter.get_json_files(logObjDict, condor_jobs, ".out", "/home/jguiang/ProjectMetis/log_files/tasks")
+
+#        retries = max(0, len(condor_jobs)-1)
+#        inputs = job["inputs"]
+#        innames, innevents = zip(*inputs)
+#        nevents = sum(innevents)
+#        print "[{0}] Job {1} is not done. Retried {2} times.".format(dsname, iout, retries)
+#        print "   --> {0} inputs with a total of {1} events".format(len(inputs),nevents)
+#        if retries >= 1:
+#            print "   --> Previous condor logs:"
+#            for ijob in range(len(condor_jobs)-1):
+#                outlog = condor_jobs[ijob]["logfile_out"]
+#               errlog = condor_jobs[ijob]["logfile_err"]
+#               print "       - {0}".format(errlog)
+#
     if dbsnevts != cms4nevts:
         print "Dataset {0} is missing {1} events (DBS: {2}, CMS4: {3})".format(
                 dsname, dbsnevts-cms4nevts, dbsnevts, cms4nevts
                 )
 
+#Plots
+'''
+    2D Graphs:
+        Profile: plotter.plot_Profile(logObjPile, xkey, ykey, bins)
+        2DHist: plotter.plot_2DHist(logObjPile, xkey, ykey, bins)
+    
+    1D Graphs:
+        1DHist; plotter.plot_1DHist(logObjPile, xkey, bins)
+'''
+plotter.plot_Profile(logObjPile, "epoch", "usr", 100)
