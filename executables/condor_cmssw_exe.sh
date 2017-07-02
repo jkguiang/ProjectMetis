@@ -9,6 +9,7 @@ CMSSWVERSION=$6
 SCRAMARCH=$7
 NEVTS=$8
 EXPECTEDNEVTS=$9
+PSETARGS="${@:10}" # since args can have spaces, we take 10th-->last argument as one
 
 # Make sure OUTPUTNAME doesn't have .root since we add it manually
 OUTPUTNAME=$(echo $OUTPUTNAME | sed 's/\.root//')
@@ -22,6 +23,7 @@ echo "PSET: $PSET"
 echo "CMSSWVERSION: $CMSSWVERSION"
 echo "NEVTS: $NEVTS"
 echo "EXPECTEDNEVTS: $EXPECTEDNEVTS"
+echo "PSETARGS: $PSETARGS"
 
 echo "hostname: $(hostname)"
 echo "uname -a: $(uname -a)"
@@ -40,7 +42,7 @@ eval `scramv1 runtime -sh`
 mv ../$PSET pset.py
 mv ../package.tar.gz package.tar.gz
 tar xzf package.tar.gz
-scram b -j10
+scram b
 
 # logging every 45 seconds gives ~100kb log file/3 hours
 dstat -cdngytlmrs --float --nocolor -T --output dsout.csv 45 >& /dev/null &
@@ -60,7 +62,7 @@ ls -lrth
 
 echo -e "\n--- begin running ---\n" #                           <----- section division
 
-cmsRun pset.py
+cmsRun pset.py ${PSETARGS}
 
 # Rigorous sweeproot which checks ALL branches for ALL events.
 # If GetEntry() returns -1, then there was an I/O problem, so we will delete it
