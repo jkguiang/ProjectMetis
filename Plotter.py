@@ -9,7 +9,8 @@ from tqdm import *
 import LogParser as lp
 
 #Takes list of log file paths, outputs list of log file dictionaries -> {"key":[list of values]}
-def parse_log_files(fPile):
+#Uses tqdm package to display progress bar
+def tqdm_parse_log_files(fPile):
     logObjPile = {}
     counter = 0
 
@@ -19,14 +20,14 @@ def parse_log_files(fPile):
 
     return logObjPile
 
-#Takes list of log file paths, updates logObjPile dictionary
-def updt_log_dict(logObjPile, fPile)
-    counter = len(lobObjPile)
-    
+#Takes list of log file paths, outputs list of log file dictionaries -> {"key":[list of values]}
+def updt_log_dict(logObjPile, fPile):
+    counter = len(logObjPile)
+
     for fpath in fPile:
         logObjPile[counter] = lp.log_parser(fpath)
         counter += 1
-    
+
     return logObjPile
 
 #Log File Functions:
@@ -58,13 +59,14 @@ def get_log_files(logdir, ftype):
 #Retrieve perinent files from "condor_jobs" key in json output
 #takes log dicionary, condor_jobs list, desired file type, and path to directry with log files
 def get_json_files(logObjPile, condor_jobs, ftype, usrpath):
+    print("get json ran")
     fPile = []
     
     ftype = ("logfile_" + ftype.split(".")[1])
 
     for log in condor_jobs:
         try:
-            fpath = usrpath + log["ftype"].split("ProjectMetis/tasks")[1]
+            fpath = usrpath + log[ftype].split("ProjectMetis/tasks")[1]
             fPile.append(fpath)
         except KeyError:
             pass
@@ -130,16 +132,21 @@ def get_data_2D(logObjPile, xkey, ykey):
 
     return xLst, yLst
     
-def plot_1DHist(logObjPile, xkey, pltbins):
+def plot_1DHist(logObjPile, title, xkey, pltbins):
     x = get_data_1D(logObjPile, xkey)
+    if title == None:
+        title = "1D Histogram"
+
     plt.hist(x, pltbins)
-    set_graph_info("1D Histogram", xkey, "") 
+    set_graph_info(title, xkey, "") 
 
     return
 
-def plot_2DHist(logObjPile, xkey, ykey, pltbins):
+def plot_2DHist(logObjPile, title, xkey, ykey, pltbins):
     #Get data
     x, y = get_data_2D(logObjPile, xkey, ykey)
+    if title == None:
+        title = "2DHist"
 
     #Import Colors
     from matplotlib.colors import LogNorm
@@ -149,15 +156,17 @@ def plot_2DHist(logObjPile, xkey, ykey, pltbins):
 
     #Plot Heatmap
     plt.colorbar()
-    set_graph_info("2D Histogram", xkey, ykey)
+    set_graph_info(title, xkey, ykey)
 
     return
 
-def plot_Profile(logObjPile, xkey, ykey, pltbins):
+def plot_Profile(logObjPile, title, xkey, ykey, pltbins):
     #Get data
     x, y = get_data_2D(logObjPile, xkey, ykey)
     x = np.array(x)
     y = np.array(y)
+    if title == None:
+        title = "Profile"
 
     #Build graph
     means_result = scipy.stats.binned_statistic(x, [y, y**2], bins = pltbins, statistic = "mean")
@@ -168,13 +177,15 @@ def plot_Profile(logObjPile, xkey, ykey, pltbins):
     
     #Plot graph
     plt.errorbar(x = bin_centers, y = means, yerr = standard_deviation, linestyle = "none", marker = ".")
-    set_graph_info("Profile", xkey, ("Average " + ykey))
+    set_graph_info(title, xkey, ("Average " + ykey))
 
     return
 
-def plot_avgY2DHist(logObjPile, xkey, ykey, pltbins):
+def plot_avgY2DHist(logObjPile, title, xkey, ykey, pltbins):
     #Get data
     x, y = get_data_2D(logObjPile, xkey, ykey)
+    if title == None:
+        title = "2D Histogram"
 
     #Build x-bins
     xbins = {}
@@ -206,7 +217,7 @@ def plot_avgY2DHist(logObjPile, xkey, ykey, pltbins):
 
     #Plot Heatmap
     plt.colorbar()
-    set_graph_info("2D Histogram", xkey, ("Average " + ykey))
+    set_graph_info(title, xkey, ("Average " + ykey))
 
     return
 

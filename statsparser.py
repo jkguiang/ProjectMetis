@@ -9,15 +9,13 @@ with open("/home/jguiang/ProjectMetis/log_files/summary.json","r") as fhin:
 summary = data["summary"]
 counts = data["counts"]
 
-#Initialize empty dictionary to be filled with log files/log info
-logObjDict = {}
-
 for dsname in summary.keys():
     print
 
     sample = summary[dsname]
     cms4nevts = 0
     dbsnevts = counts[dsname]["dbs"]
+    logObjPile = {}
     for iout in sample.keys():
         job = sample[iout]
 
@@ -30,7 +28,7 @@ for dsname in summary.keys():
         condor_jobs = job["condor_jobs"]
 
         #Pass current log dictionary, original log file locations (job["condor jobs"]), desired log file type, and current log file location to plotter
-        logObjDict = plotter.get_json_files(logObjDict, condor_jobs, ".out", "/home/jguiang/ProjectMetis/log_files/tasks")
+        logObjPile = plotter.get_json_files(logObjPile, condor_jobs, ".out", "/home/jguiang/ProjectMetis/log_files/tasks")
 
 #        retries = max(0, len(condor_jobs)-1)
 #        inputs = job["inputs"]
@@ -41,7 +39,7 @@ for dsname in summary.keys():
 #        if retries >= 1:
 #            print "   --> Previous condor logs:"
 #            for ijob in range(len(condor_jobs)-1):
-#                outlog = condor_jobs[ijob]["logfile_out"]
+#               outlog = condor_jobs[ijob]["logfile_out"]
 #               errlog = condor_jobs[ijob]["logfile_err"]
 #               print "       - {0}".format(errlog)
 #
@@ -50,7 +48,22 @@ for dsname in summary.keys():
                 dsname, dbsnevts-cms4nevts, dbsnevts, cms4nevts
                 )
 
-#Plots
+        #Plot data from bad runs
+        try:
+            plotter.plot_Profile(logObjPile, dsname, "epoch", "usr", 100)
+        except ValueError as error:
+            print(error)
+            print("Skipped: " + dsname)
+            print("Logfile info:")
+            print("Compiled logfiles: " + str(len(logObjPile)))
+            print("Logfile information: ") 
+            try:
+                print(logObjPile[0])
+            except KeyError:
+                print("None")
+            pass
+
+#Plot Functions:
 '''
     2D Graphs:
         Profile: plotter.plot_Profile(logObjPile, xkey, ykey, bins)
@@ -59,4 +72,3 @@ for dsname in summary.keys():
     1D Graphs:
         1DHist; plotter.plot_1DHist(logObjPile, xkey, bins)
 '''
-plotter.plot_Profile(logObjPile, "epoch", "usr", 100)

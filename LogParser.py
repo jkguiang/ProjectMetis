@@ -9,6 +9,7 @@ class log_file(dict):
         try:
             #List important traits here:
             self.Host
+            self.usr
         except AttributeError:
             return False
         else:
@@ -69,10 +70,10 @@ def log_parser(logName):
                                 logDict[headers[counter]].append(float(i))
                             counter += 1
         
-        #Assigning string names to log_file instances in logPile dictionary -> str(name):<log_file instance>
         curfile.close()
-    
+
         return log_file(logDict)
+
     else:
         return log_file(logDict)
 
