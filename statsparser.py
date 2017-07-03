@@ -25,14 +25,14 @@ for dsname in summary.keys():
             cms4nevts += job["output"][1]
             continue
 
-#        condor_jobs = job["condor_jobs"]
+        condor_jobs = job["condor_jobs"]
 
-#        retries = max(0, len(condor_jobs)-1)
-#        inputs = job["inputs"]
-#        innames, innevents = zip(*inputs)
-#        nevents = sum(innevents)
-#        print "[{0}] Job {1} is not done. Retried {2} times.".format(dsname, iout, retries)
-#        print "   --> {0} inputs with a total of {1} events".format(len(inputs),nevents)
+        retries = max(0, len(condor_jobs)-1)
+        inputs = job["inputs"]
+        innames, innevents = zip(*inputs)
+        nevents = sum(innevents)
+        print "[{0}] Job {1} is not done. Retried {2} times.".format(dsname, iout, retries)
+        print "   --> {0} inputs with a total of {1} events".format(len(inputs),nevents)
 #        if retries >= 1:
 #            print "   --> Previous condor logs:"
 #            for ijob in range(len(condor_jobs)-1):
@@ -53,7 +53,17 @@ for dsname in summary.keys():
             #Pass current log dictionary, original log file locations (job["condor jobs"]), desired log file type, and current log file location to plotter
             logObjPile = plotter.get_json_files(logObjPile, sample[iout]["condor_jobs"], ".out", "/home/jguiang/ProjectMetis/log_files/tasks")
         try:
-            plotter.plot_Profile(logObjPile, dsname, "epoch", "usr", 100)
+            #Plot Functions:
+            '''
+                2D Graphs:
+                    Profile: plotter.plot_Profile(logObjPile, xkey, ykey, bins)
+                    2DHist: plotter.plot_2DHist(logObjPile, xkey, ykey, bins)
+                
+                1D Graphs:
+                    1DHist; plotter.plot_1DHist(logObjPile, xkey, bins)
+            '''
+
+            plotter.plot_2DHist(logObjPile, dsname, "epoch", "usr", 100)
         except ValueError as error:
             print(error)
             print("Skipped: " + dsname)
@@ -66,12 +76,3 @@ for dsname in summary.keys():
                 print("None")
             pass
 
-#Plot Functions:
-'''
-    2D Graphs:
-        Profile: plotter.plot_Profile(logObjPile, xkey, ykey, bins)
-        2DHist: plotter.plot_2DHist(logObjPile, xkey, ykey, bins)
-    
-    1D Graphs:
-        1DHist; plotter.plot_1DHist(logObjPile, xkey, bins)
-'''
