@@ -59,7 +59,6 @@ def get_log_files(logdir, ftype):
 #Retrieve perinent files from "condor_jobs" key in json output
 #takes log dicionary, condor_jobs list, desired file type, and path to directry with log files
 def get_json_files(logObjPile, condor_jobs, ftype, usrpath):
-    print("get json ran")
     fPile = []
     
     ftype = ("logfile_" + ftype.split(".")[1])

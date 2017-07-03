@@ -3,6 +3,7 @@ import os
 import sys
 from pprint import pprint
 import Plotter as plotter
+from tqdm import *
 
 with open("/home/jguiang/ProjectMetis/log_files/summary.json","r") as fhin:
     data = json.load(fhin)
@@ -15,7 +16,6 @@ for dsname in summary.keys():
     sample = summary[dsname]
     cms4nevts = 0
     dbsnevts = counts[dsname]["dbs"]
-    logObjPile = {}
     for iout in sample.keys():
         job = sample[iout]
 
@@ -25,10 +25,7 @@ for dsname in summary.keys():
             cms4nevts += job["output"][1]
             continue
 
-        condor_jobs = job["condor_jobs"]
-
-        #Pass current log dictionary, original log file locations (job["condor jobs"]), desired log file type, and current log file location to plotter
-        logObjPile = plotter.get_json_files(logObjPile, condor_jobs, ".out", "/home/jguiang/ProjectMetis/log_files/tasks")
+#        condor_jobs = job["condor_jobs"]
 
 #        retries = max(0, len(condor_jobs)-1)
 #        inputs = job["inputs"]
@@ -49,6 +46,12 @@ for dsname in summary.keys():
                 )
 
         #Plot data from bad runs
+        logObjPile = {}
+        
+        print("Plotting...")
+        for iout in tqdm(sample.keys()):
+            #Pass current log dictionary, original log file locations (job["condor jobs"]), desired log file type, and current log file location to plotter
+            logObjPile = plotter.get_json_files(logObjPile, sample[iout]["condor_jobs"], ".out", "/home/jguiang/ProjectMetis/log_files/tasks")
         try:
             plotter.plot_Profile(logObjPile, dsname, "epoch", "usr", 100)
         except ValueError as error:
