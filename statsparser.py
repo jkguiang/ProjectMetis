@@ -7,12 +7,44 @@ from tqdm import *
 
 def get_underscored(dsname):
     split_title = dsname.split("/")
+    length = len(split_title)
     final_title = ''
     
+    counter = 0
     for wrd in split_title:
-        if wrd != '':
+        counter += 1
+        if counter == length:
+            final_title += wrd
+            return final_title
+        elif wrd != '':
             final_title += (wrd + "_")
-    return final_title
+
+def get_dsnames():
+    with open("/home/jguiang/ProjectMetis/log_files/summary.json","r") as fhin:
+        data = json.load(fhin)
+    summary = data["summary"]
+    counts = data["counts"]
+
+    dsnLst = []
+    for dsname in summary.keys():
+        sample = summary[dsname]
+        cms4nevts = 0
+        dbsnevts = counts[dsname]["dbs"]
+        for iout in sample.keys():
+            job = sample[iout]
+
+            is_done  = job["output_exists"] and not job["is_on_condor"]
+
+            if is_done:
+                cms4nevts += job["output"][1]
+                continue
+
+        if dbsnevts != cms4nevts:
+            dsn_underscored = get_underscored(dsname)
+            if dsn_underscored not in dsnLst:
+                dsnLst.append(dsn_underscored)
+
+    return dsnLst
 
 def parse_stats():
     with open("/home/jguiang/ProjectMetis/log_files/summary.json","r") as fhin:

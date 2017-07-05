@@ -79,8 +79,14 @@ def set_graph_info(title, xlabel, ylabel):
     plt.title(title)
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
+
+    split_title = title.split('/')
+    file_title = ''
+    for wrd in split_title:
+        if wrd != '':
+            file_title += (wrd + '_')
     
-    plt.show()
+    plt.savefig('static/' + file_title + xlabel + '_vs_' + ylabel + '.png')
     
     return
 
@@ -224,6 +230,5 @@ def plot_avgY2DHist(logObjPile, title, xkey, ykey, pltbins):
 if __name__ == "__main__":
     fPile = get_log_files("/home/jguiang/ProjectMetis/log_files", ".out")
     logObjPile = parse_log_files(fPile)
-    print(logObjPile[0]["send"])
     
     plot_Profile(logObjPile, "epoch", "send", 50)

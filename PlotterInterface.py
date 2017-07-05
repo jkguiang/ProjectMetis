@@ -3,6 +3,7 @@ from string import Template
 import statsparser as sp
 
 app = Flask(__name__)
+dsnLst = sp.get_dsnames()
 
 graph_template = Template("""
 
@@ -16,7 +17,6 @@ graph_template = Template("""
 
 @app.route('/')
 def home():
-    dsnLst = sp.parse_stats()
     return render_template("home.html", dsnLst = dsnLst)
 
 @app.route('/<dsname>')
@@ -24,4 +24,4 @@ def graph(dsname):
     return(graph_template.substitute(dsname=dsname))
 
 if __name__ == "__main__":
-    app.run(debug=True,use_reloader=True)
+    app.run()
