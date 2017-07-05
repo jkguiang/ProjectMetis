@@ -3,7 +3,7 @@ from string import Template
 import statsparser as sp
 
 app = Flask(__name__)
-dsnLst = sp.get_dsnames()
+dsnLst = sp.get_dsnames("/home/jguiang/ProjectMetis/log_files/summary.json")
 
 graph_template = Template("""
 

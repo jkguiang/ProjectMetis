@@ -19,14 +19,14 @@ def get_underscored(dsname):
         elif wrd != '':
             final_title += (wrd + "_")
 
-def get_dsnames():
-    with open("/home/jguiang/ProjectMetis/log_files/summary.json","r") as fhin:
+def get_dsnames(jsonpath):
+    with open(jsonpath,"r") as fhin:
         data = json.load(fhin)
     summary = data["summary"]
     counts = data["counts"]
 
     dsnLst = []
-    for dsname in summary.keys():
+    for dsname in tqdm(summary.keys()):
         sample = summary[dsname]
         cms4nevts = 0
         dbsnevts = counts[dsname]["dbs"]
@@ -46,8 +46,8 @@ def get_dsnames():
 
     return dsnLst
 
-def parse_stats():
-    with open("/home/jguiang/ProjectMetis/log_files/summary.json","r") as fhin:
+def parse_stats(jsonpath, logpath):
+    with open(jsonpath,"r") as fhin:
         data = json.load(fhin)
     summary = data["summary"]
     counts = data["counts"]
@@ -84,10 +84,6 @@ def parse_stats():
     #               print "       - {0}".format(errlog)
     #
         if dbsnevts != cms4nevts:
-            dsn_underscored = get_underscored(dsname)
-            if dsn_underscored not in dsnLst:
-                dsnLst.append(dsn_underscored)
-
             print "Dataset {0} is missing {1} events (DBS: {2}, CMS4: {3})".format(
                     dsname, dbsnevts-cms4nevts, dbsnevts, cms4nevts
                     )
@@ -98,7 +94,7 @@ def parse_stats():
             print("Plotting...")
             for iout in tqdm(sample.keys()):
                 #Pass current log dictionary, original log file locations (job["condor jobs"]), desired log file type, and current log file location to plotter
-                logObjPile = plotter.get_json_files(logObjPile, sample[iout]["condor_jobs"], ".out", "/home/jguiang/ProjectMetis/log_files/tasks")
+                logObjPile = plotter.get_json_files(logObjPile, sample[iout]["condor_jobs"], ".out", logpath)
             try:
                 #Plot Functions:
                 '''
@@ -123,4 +119,7 @@ def parse_stats():
                     print("None")
                 pass
 
-    return dsnLst
+    return
+
+if __name__ == "__main__":
+    parse_stats("/home/jguiang/ProjectMetis/log_files/summary.json", "/home/jguiang/ProjectMetis/log_files/tasks")
