@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+    </head>
+
+    <body>
+        <h1>
+            Copy and paste one of the the below names into url to navigate to graph<br />
+            (i.e. 127.0.0.1:5000/paste_here)
+        </h1>
+        
+{% for dsn in dsnLst %}
+            {{dsn}}
+            <br />
+            <br />
+        {% endfor %}
+
+    </body>
+
+</html>
