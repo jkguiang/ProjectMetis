@@ -47,6 +47,8 @@ def get_log_files(logdir, ftype):
     for d in dirLst:
         if d == "plots":
             continue
+        if d == "summary.json":
+            continue
         else:
             newdir = (os.path.abspath(os.path.join(logdir, d)) + endpath)
             newdirLst = os.listdir(newdir) 
@@ -229,7 +231,7 @@ def plot_avgY2DHist(logObjPile, title, xkey, ykey, pltbins):
 
 #Debugging operations
 if __name__ == "__main__":
-    fPile = get_log_files("/home/jguiang/ProjectMetis/log_files", ".out")
-    logObjPile = parse_log_files(fPile)
-    
-    plot_Profile(logObjPile, "epoch", "send", 50)
+    fPile = get_log_files("/home/jguiang/ProjectMetis/log_files/tasks", ".out")
+    logObjPile = tqdm_parse_log_files(fPile)
+
+    print(logObjPile[0]["Host"])

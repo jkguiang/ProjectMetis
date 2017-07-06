@@ -2,5 +2,21 @@
 
 {% block body %}
     <h1>{{dsname}}</h1>
+
+    <h2>Graphs</h2>
     <img src="{{url_for('static', filename = dsname + '_epoch_vs_usr.png')}}" alt="Image failed to load" />
+
+    <h3>Summary</h3>
+    {% for key, item in summaries[dsname].items() %}
+        {% if key != "Host" %}
+            <li class="list-group-item">{{key}}: {{item}}</li>
+        {% else %}
+            <li class="list-group-item">{{key}}: </li>
+            <li class="list-group-item">{{item}}</li>
+        {% endif %}
+    {% endfor %}
+
+    <h4></h4>
+    <a  class="btn btn-default" href="/">Back</a>
+
 {% endblock %}

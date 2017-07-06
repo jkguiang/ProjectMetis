@@ -28,18 +28,14 @@ def is_col(line):
 def log_parser(logName):
     logDict = {}
     headers = []
-    headGroups = []
     
     if logName.endswith('.out'):
         with open(logName, 'r') as curfile:
             for line in curfile:
                 #Looking for other important info
                 if "Host:" in line:
-                    if "Host" in line:
-                        trim = line.split(",") #getLine
-                        logDict["Host"] = trim[1]
-                    if "total" in line:
-                        headGroups = line.split("\"")
+                    trim = line.split(",") #getLine
+                    logDict["host"] = trim[1].split("\"")[1]
                 
                 else:
                     splitLine = line.split(",")
@@ -78,6 +74,6 @@ def log_parser(logName):
         return log_file(logDict)
 
 if __name__ == "__main__":
-    logObj = log_parser("/home/jguiang/ProjectMetis/log_files/CMSSWTask_SinglePhoton_Run2017B-PromptReco-v1_MINIAOD_CMS4_V00-00-03/logs/std_logs/1e.1090614.0.out")
+    logObj = log_parser("/home/jguiang/ProjectMetis/log_files/tasks/CMSSWTask_SinglePhoton_Run2017B-PromptReco-v1_MINIAOD_CMS4_V00-00-03/logs/std_logs/1e.1090614.0.out")
     print(logObj["epoch"])
     print(logObj.keys())

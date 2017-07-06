@@ -19,32 +19,24 @@ def get_underscored(dsname):
         elif wrd != '':
             final_title += (wrd + "_")
 
-def get_dsnames(jsonpath):
-    with open(jsonpath,"r") as fhin:
-        data = json.load(fhin)
-    summary = data["summary"]
-    counts = data["counts"]
+def get_dsnames(summarypath):
+    with open(summarypath, 'r') as fhin:
+        summaryPile = json.load(fhin)
 
-    dsnLst = []
-    for dsname in tqdm(summary.keys()):
-        sample = summary[dsname]
-        cms4nevts = 0
-        dbsnevts = counts[dsname]["dbs"]
-        for iout in sample.keys():
-            job = sample[iout]
+    return summaryPile
 
-            is_done  = job["output_exists"] and not job["is_on_condor"]
+def updt_summary(summaryPile, dsname, retries, missing_evts, logObjPile):
+    name = get_underscored(dsname)
+    summaryPile[name] = {"Retries":retries, "Missing Events":(missing_evts), "Hosts":[]}
+    for log in logObjPile:
+        try:
+            host = logObjPile[log]["host"]
+            if host not in summaryPile[name]["Hosts"]:
+                summaryPile[name]["Hosts"].append(host)
+        except KeyError:
+            pass
 
-            if is_done:
-                cms4nevts += job["output"][1]
-                continue
-
-        if dbsnevts != cms4nevts:
-            dsn_underscored = get_underscored(dsname)
-            if dsn_underscored not in dsnLst:
-                dsnLst.append(dsn_underscored)
-
-    return dsnLst
+    return summaryPile
 
 def parse_stats(jsonpath, logpath):
     with open(jsonpath,"r") as fhin:
@@ -53,6 +45,7 @@ def parse_stats(jsonpath, logpath):
     counts = data["counts"]
 
     dsnLst = []
+    summaryPile = {}
     for dsname in summary.keys():
         print
 
@@ -95,6 +88,8 @@ def parse_stats(jsonpath, logpath):
             for iout in tqdm(sample.keys()):
                 #Pass current log dictionary, original log file locations (job["condor jobs"]), desired log file type, and current log file location to plotter
                 logObjPile = plotter.get_json_files(logObjPile, sample[iout]["condor_jobs"], ".out", logpath)
+                #Summary pile stores information to be displayed with graph
+                summaryPile = updt_summary(summaryPile, dsname, retries, (dbsnevts-cms4nevts), logObjPile)
             try:
                 #Plot Functions:
                 '''
@@ -118,6 +113,9 @@ def parse_stats(jsonpath, logpath):
                 except KeyError:
                     print("None")
                 pass
+
+    with open("static/summaryinfo.json", 'w') as fhout:
+        json.dump(summaryPile, fhout)
 
     return
 
