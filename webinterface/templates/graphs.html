@@ -1,0 +1,6 @@
+{% extends 'layout.html' %}
+
+{% block body %}
+    <h1>{{dsname}}</h1>
+    <img src="{{url_for('static', filename = dsname + '_epoch_vs_usr.png')}}" alt="Image failed to load" />
+{% endblock %}

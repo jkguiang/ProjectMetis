@@ -87,6 +87,7 @@ def set_graph_info(title, xlabel, ylabel):
             file_title += (wrd + '_')
     
     plt.savefig('static/' + file_title + xlabel + '_vs_' + ylabel + '.png')
+    plt.close()
     
     return
 

@@ -19,9 +19,9 @@ graph_template = Template("""
 def home():
     return render_template("home.html", dsnLst = dsnLst)
 
-@app.route('/<dsname>')
+@app.route('/graphs/<string:dsname>/')
 def graph(dsname):
-    return(graph_template.substitute(dsname=dsname))
+    return render_template("graphs.html", dsname=dsname)
 
 if __name__ == "__main__":
     app.run()
