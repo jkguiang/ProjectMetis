@@ -1,4 +1,5 @@
 #Plotting Libraries
+import os
 import matplotlib.pyplot as plt
 import numpy as np
 import math
@@ -7,6 +8,9 @@ from tqdm import *
 
 #Other imports
 import LogParser as lp
+
+#Path to current working directory to be used when returning path to plot file
+cwd = os.getcwd()
 
 #Takes list of log file paths, outputs list of log file dictionaries -> {"key":[list of values]}
 #Uses tqdm package to display progress bar
@@ -93,7 +97,7 @@ def set_graph_info(title, xlabel, ylabel):
     plt.savefig(pltpath)
     plt.close()
     
-    return pltpath
+    return (cwd + '/' + pltpath)
 
 #Takes data as list, returns mean as float
 def get_mean(data):
