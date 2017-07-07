@@ -19,15 +19,14 @@ def get_underscored(dsname):
         elif wrd != '':
             final_title += (wrd + "_")
 
-def get_dsnames(summarypath):
-    with open(summarypath, 'r') as fhin:
-        summaryPile = json.load(fhin)
-
-    return summaryPile
-
-def updt_summary(summaryPile, dsname, retries, missing_evts, logObjPile):
+def updt_summary(summaryPile, dsname, bad_jobs, missing_evts, pltpaths, logObjPile):
     name = get_underscored(dsname)
-    summaryPile[name] = {"Retries":retries, "Missing Events":(missing_evts), "Hosts":[]}
+    summaryPile[name] = {
+        "Plots":pltpaths,
+        "Jobs not done":bad_jobs,
+        "Missing Events":(missing_evts), 
+        "Hosts":[]
+        }
     for log in logObjPile:
         try:
             host = logObjPile[log]["host"]
@@ -52,6 +51,8 @@ def parse_stats(jsonpath, logpath):
         sample = summary[dsname]
         cms4nevts = 0
         dbsnevts = counts[dsname]["dbs"]
+
+        bad_jobs = {}
         for iout in sample.keys():
             job = sample[iout]
 
@@ -67,6 +68,13 @@ def parse_stats(jsonpath, logpath):
             inputs = job["inputs"]
             innames, innevents = zip(*inputs)
             nevents = sum(innevents)
+
+            bad_jobs["Job {0}".format(iout)] = {
+                "retries":retries,
+                "inputs":len(inputs),
+                "events":nevents
+            }
+
             print "[{0}] Job {1} is not done. Retried {2} times.".format(dsname, iout, retries)
             print "   --> {0} inputs with a total of {1} events".format(len(inputs),nevents)
     #        if retries >= 1:
@@ -88,20 +96,26 @@ def parse_stats(jsonpath, logpath):
             for iout in tqdm(sample.keys()):
                 #Pass current log dictionary, original log file locations (job["condor jobs"]), desired log file type, and current log file location to plotter
                 logObjPile = plotter.get_json_files(logObjPile, sample[iout]["condor_jobs"], ".out", logpath)
-                #Summary pile stores information to be displayed with graph
-                summaryPile = updt_summary(summaryPile, dsname, retries, (dbsnevts-cms4nevts), logObjPile)
             try:
                 #Plot Functions:
                 '''
                     2D Graphs:
-                        Profile: plotter.plot_Profile(logObjPile, xkey, ykey, bins)
-                        2DHist: plotter.plot_2DHist(logObjPile, xkey, ykey, bins)
+                        norm_toggle = 1 -> scale x-values such that max x-value is 1
+                        norm_toggle = 0 -> plot x and y values as they are
+
+                        Profile: plotter.plot_Profile(logObjPile, xkey, ykey, bins, norm_toggle)
+                        2DHist: plotter.plot_2DHist(logObjPile, xkey, ykey, bins, norm_toggle)
                     
                     1D Graphs:
                         1DHist; plotter.plot_1DHist(logObjPile, xkey, bins)
                 '''
+                pltpaths = []
+                pltpaths.append(plotter.plot_2DHist(logObjPile, dsname, "epoch", "usr", 100, 1))
+                pltpaths.append(plotter.plot_2DHist(logObjPile, dsname, "epoch", "send", 100, 1))
+                pltpaths.append(plotter.plot_2DHist(logObjPile, dsname, "epoch", "recv", 100, 1))
 
-                plotter.plot_2DHist(logObjPile, dsname, "epoch", "usr", 100)
+                #Summary pile stores information to be displayed with graph
+                summaryPile = updt_summary(summaryPile, dsname, bad_jobs, (dbsnevts-cms4nevts), pltpaths, logObjPile)
             except ValueError as error:
                 print(error)
                 print("Skipped: " + dsname)
@@ -115,7 +129,7 @@ def parse_stats(jsonpath, logpath):
                 pass
 
     with open("static/summaryinfo.json", 'w') as fhout:
-        json.dump(summaryPile, fhout)
+        json.dump(summaryPile, fhout, sort_keys = True, indent = 4, separators=(',',': '))
 
     return
 

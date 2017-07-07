@@ -88,10 +88,12 @@ def set_graph_info(title, xlabel, ylabel):
         if wrd != '':
             file_title += (wrd + '_')
     
-    plt.savefig('static/' + file_title + xlabel + '_vs_' + ylabel + '.png')
+    pltpath = ('static/' + file_title + xlabel + '_vs_' + ylabel + '.png')
+
+    plt.savefig(pltpath)
     plt.close()
     
-    return
+    return pltpath
 
 #Takes data as list, returns mean as float
 def get_mean(data):
@@ -140,44 +142,57 @@ def get_data_2D(logObjPile, xkey, ykey):
 
     return xLst, yLst
     
-def plot_1DHist(logObjPile, title, xkey, pltbins):
+def plot_1DHist(logObjPile, title, xkey, bins):
     x = get_data_1D(logObjPile, xkey)
     if title == None:
         title = "1D Histogram"
 
-    plt.hist(x, pltbins)
-    set_graph_info(title, xkey, "") 
+    plt.hist(x, bins)
 
-    return
+    return set_graph_info(title, xkey, "") 
 
-def plot_2DHist(logObjPile, title, xkey, ykey, pltbins):
+def plot_2DHist(logObjPile, title, xkey, ykey, bins, norm_toggle):
     #Get data
     x, y = get_data_2D(logObjPile, xkey, ykey)
     if title == None:
         title = "2DHist"
+    
+    if norm_toggle == 1:
+        max_x = float(max(x))
+        counter = 0
+        for num in x:
+            x[counter] = (num/max_x)
+            counter += 1
+
 
     #Import Colors
     from matplotlib.colors import LogNorm
 
     #Create Heatmap
-    plt.hist2d(x, y, bins = pltbins, norm = LogNorm())
+    plt.hist2d(x, y, bins = bins, norm = LogNorm())
 
     #Plot Heatmap
     plt.colorbar()
-    set_graph_info(title, xkey, ykey)
 
-    return
+    return set_graph_info(title, xkey, ykey)
 
-def plot_Profile(logObjPile, title, xkey, ykey, pltbins):
+def plot_Profile(logObjPile, title, xkey, ykey, bins, norm_toggle):
     #Get data
     x, y = get_data_2D(logObjPile, xkey, ykey)
     x = np.array(x)
     y = np.array(y)
     if title == None:
         title = "Profile"
+    
+    if norm_toggle == 1:
+        max_x = float(max(x))
+        counter = 0
+        for num in x:
+            x[counter] = (num/max_x)
+            counter += 1
 
     #Build graph
-    means_result = scipy.stats.binned_statistic(x, [y, y**2], bins = pltbins, statistic = "mean")
+    means_result = scipy.stats.binned_statistic(x, [y, y**2], bins = bins, statistic = "mean")
     means, means2 = means_result.statistic
     standard_deviation = np.sqrt(means2 - means**2)
     bin_edges = means_result.bin_edges
@@ -185,53 +200,11 @@ def plot_Profile(logObjPile, title, xkey, ykey, pltbins):
     
     #Plot graph
     plt.errorbar(x = bin_centers, y = means, yerr = standard_deviation, linestyle = "none", marker = ".")
-    set_graph_info(title, xkey, ("Average " + ykey))
 
-    return
-
-def plot_avgY2DHist(logObjPile, title, xkey, ykey, pltbins):
-    #Get data
-    x, y = get_data_2D(logObjPile, xkey, ykey)
-    if title == None:
-        title = "2D Histogram"
-
-    #Build x-bins
-    xbins = {}
-    for num in x:
-        xbins[num] = []
-
-    #Populate x-bins with y-values
-    counter = 0
-    for num in y:
-        xbins[x[counter]].append(num)
-        counter += 1
-
-    #get mean of y-values in xbins:
-    for xb in xbins:
-        xbins[xb] = get_mean(xbins[xb])
-
-    #Build final data sets
-    x = []
-    y = []
-    for xb in xbins:
-        y.append(xbins[xb])
-        x.append(xb)
-
-    #Import Colors
-    from matplotlib.colors import LogNorm    
-
-    #Create Heatmap
-    plt.hist2d(x, y, bins = 100, norm = LogNorm())
-
-    #Plot Heatmap
-    plt.colorbar()
-    set_graph_info(title, xkey, ("Average " + ykey))
-
-    return
+    return set_graph_info(title, xkey, ("Average " + ykey))
 
 #Debugging operations
 if __name__ == "__main__":
     fPile = get_log_files("/home/jguiang/ProjectMetis/log_files/tasks", ".out")
     logObjPile = tqdm_parse_log_files(fPile)
 
-    print(logObjPile[0]["Host"])
