@@ -1,7 +1,9 @@
 var jsonPath = "static/summaryinfo.json";
+var refreshSecs = 10*60;
 
 $(function() {
     load_json(jsonPath);
+    setInterval(load_json, refreshSecs*1000);
 });
 
 $.ajaxSetup({
@@ -46,7 +48,7 @@ function get_plots(data){
         if (data.hasOwnProperty(key)){
             pltLst = data[key].Plots;
             for (var j = 0; j < pltLst.length; j++){
-                toappend+="<img src="+pltLst[j]+" >";
+                toappend+="<img src="+pltLst[j]+" width=400 height=300>";
             }
             $("#plots_"+i).html(toappend);
             i++;
@@ -57,9 +59,9 @@ function get_plots(data){
 function get_summaries(data){
     var i = 0;
     for (var key in data){
-        $("#details_"+i).append("<p id='summary_"+i+"'></p>");
+        $("#details_"+i).append("<ul id='summary_"+i+"'></ul>");
         if (data.hasOwnProperty(key)){
-            jsonStr = syntaxHighlight(JSON.stringify(data[key]), undefined, 4);
+            jsonStr = syntaxHighlight(JSON.stringify(data[key], undefined, 4));
             $("#summary_"+i).html("<pre>"+jsonStr+"</pre>");
             i++;
         }

@@ -24,15 +24,7 @@ def updt_summary(summaryPile, dsname, bad_jobs, missing_evts, pltpaths, logObjPi
         "Plots":pltpaths,
         "Jobs not done":bad_jobs,
         "Missing Events":(missing_evts), 
-        "Hosts":[]
         }
-    for log in logObjPile:
-        try:
-            host = logObjPile[log]["host"]
-            if host not in summaryPile[name]["Hosts"]:
-                summaryPile[name]["Hosts"].append(host)
-        except KeyError:
-            pass
 
     return summaryPile
 

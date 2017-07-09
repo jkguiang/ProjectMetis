@@ -79,7 +79,7 @@ def get_json_files(logObjPile, condor_jobs, ftype, usrpath):
 #Sets plot title and axis labels, shows graph
 def set_graph_info(title, xlabel, ylabel):
 
-    plt.title(title)
+    plt.title("")
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
 
@@ -145,8 +145,6 @@ def get_data_2D(logObjPile, xkey, ykey):
     
 def plot_1DHist(logObjPile, title, xkey, bins):
     x = get_data_1D(logObjPile, xkey)
-    if title == None:
-        title = "1D Histogram"
 
     plt.hist(x, bins)
 
@@ -155,8 +153,6 @@ def plot_1DHist(logObjPile, title, xkey, bins):
 def plot_2DHist(logObjPile, title, xkey, ykey, bins, norm_toggle):
     #Get data
     x, y = get_data_2D(logObjPile, xkey, ykey)
-    if title == None:
-        title = "2DHist"
     
     if norm_toggle == 1:
         max_x = float(max(x))
@@ -182,8 +178,6 @@ def plot_Profile(logObjPile, title, xkey, ykey, bins, norm_toggle):
     x, y = get_data_2D(logObjPile, xkey, ykey)
     x = np.array(x)
     y = np.array(y)
-    if title == None:
-        title = "Profile"
     
     if norm_toggle == 1:
         max_x = float(max(x))
