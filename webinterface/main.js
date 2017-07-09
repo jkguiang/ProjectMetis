@@ -59,10 +59,8 @@ function get_summaries(data){
     for (var key in data){
         $("#details_"+i).append("<p id='summary_"+i+"'></p>");
         if (data.hasOwnProperty(key)){
-            for (var j = 0; j < pltLst.length; j++){
-                jsonStr = syntaxHighlight(JSON.stringify(data[key]), undefined, 4);
-                $("#summary_"+i).html("<pre>"+jsonStr+"</pre>");
-            }
+            jsonStr = syntaxHighlight(JSON.stringify(data[key]), undefined, 4);
+            $("#summary_"+i).html("<pre>"+jsonStr+"</pre>");
             i++;
         }
     }
