@@ -1,0 +1,87 @@
+@import url(http://fonts.googleapis.com/css?family=Open+Sans:300,400,900);
+@import url(https://fonts.googleapis.com/css?family=Inconsolata);
+
+
+/* BODY CONTENTS */
+body {
+    padding: 0px;
+    margin: 0px;
+    font-size: 0.9em;
+    font-family: Open Sans;
+}
+.pbar{
+    /* display: inline-block; */
+    margin-top:10px;
+    margin-bottom:10px;
+    width: 600px;
+    height: 30px;
+}
+
+.pbartextleft{
+    /* position: relative; */
+    float: left;
+    margin-left:10px;
+    margin-top:5px;
+}
+.pbartextright{
+    /* position: relative; */
+    float: right;
+    margin-right:7px;
+    margin-top:3px;
+}
+#container {
+    padding: 10px 10px 10px 10px;
+}
+
+/* VARIOUS SECTIONS */
+.section {
+    padding: 10px 10px 10px 10px;
+    border-bottom: 2px solid #000;
+}
+
+.thin { font-weight: 300; }
+.thick { font-weight: 900; }
+.alert { font-weight: 900; color: #FF3333; }
+.good { color: #159515; }
+.bad { color: #FF3333; }
+.string { color: #339; }
+.sample_pfx { color: green; }
+.date_pfx { color: purple; }
+.bold { font-weight: bold; }
+.number { color: #393; }
+.boolean { color: blue; }
+.null { color: magenta; }
+.key { color: #333; }
+
+pre {
+    font-size: 100%;
+    white-space: pre-wrap;
+    outline: 1px solid #bbb;
+    padding: 5px;
+    margin: 5px;
+}
+.lastUpdated {
+    float:right;
+}
+.logPane {
+    height: 200px;
+    overflow: auto;
+}
+#message_wrapper {
+    min-height:20px;
+}
+html{
+    overflow-y: scroll;
+}
+
+/* LINKS */
+a:link, a:visited {
+    color: #000;
+    text-decoration: none;
+}
+a:hover {
+    color: #FF3333;
+}
+a:active {
+    color: #FF8080;
+}
