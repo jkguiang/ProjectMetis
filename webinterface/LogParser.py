@@ -1,6 +1,3 @@
-#import time
-#import datetime
-
 #Instances of log_file have attributes corresponding to log data
 class log_file(dict):
         

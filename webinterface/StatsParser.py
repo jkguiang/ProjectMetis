@@ -43,8 +43,10 @@ def parse_stats(jsonpath, logpath):
         cms4nevts = 0
         dbsnevts = counts[dsname]["dbs"]
 
-        #logObjPile = {} #Note_1: if you use this delete other instance of this in "if dbsnevts != cms4nevts" statement
+        #in_logObjPIle = False
+        #logObjPile = {} #Note_1: if you use this delete [tagged with Remove(1)] other instance of this in "if dbsnevts != cms4nevts" statement
         bad_jobs = {}
+        #Optional: add tqdm tag here for progress bars
         for iout in sample.keys():
             job = sample[iout]
 
@@ -67,8 +69,11 @@ def parse_stats(jsonpath, logpath):
                 "events":nevents
             }
 
+            #in_logObjPile = True
             #logObjPile = plotter.get_json_files(logObjPile, job[condor_jobs], ".out", logpath) #See Note_1
+            #summaryPile = updt_summary(summaryPile, dsname, bad_jobs, (dbsnevts-cms4nevts), pltpaths, logObjPile) #See Note_1
 
+            #Remove(1) all of these print commands
             print "[{0}] Job {1} is not done. Retried {2} times.".format(dsname, iout, retries)
             print "   --> {0} inputs with a total of {1} events".format(len(inputs),nevents)
     #        if retries >= 1:
@@ -78,18 +83,22 @@ def parse_stats(jsonpath, logpath):
     #               errlog = condor_jobs[ijob]["logfile_err"]
     #               print "       - {0}".format(errlog)
     #
-        if dbsnevts != cms4nevts:
+        if dbsnevts != cms4nevts #and in_logObjPile:
             print "Dataset {0} is missing {1} events (DBS: {2}, CMS4: {3})".format(
                     dsname, dbsnevts-cms4nevts, dbsnevts, cms4nevts
                     )
 
-            #Plot data from bad runs
+            #Remove(1)
             logObjPile = {}
             
+            #Remove(1) from here -------------------
             print("Plotting...")
             for iout in tqdm(sample.keys()):
                 #Pass current log dictionary, original log file locations (job["condor jobs"]), desired log file type, and current log file location to plotter
                 logObjPile = plotter.get_json_files(logObjPile, sample[iout]["condor_jobs"], ".out", logpath)
+            #until here ----------------------------
+
+            #Plot data from bad runs
             try:
                 #Plot Functions:
                 '''
@@ -102,24 +111,18 @@ def parse_stats(jsonpath, logpath):
                     
                     1D Graphs:
                         1DHist; plotter.plot_1DHist(logObjPile, xkey, bins)
+
+                    All plot functions return a string to __plotname__.png file in local directory named 'static'
                 '''
                 pltpaths = []
                 pltpaths.append(plotter.plot_2DHist(logObjPile, dsname, "epoch", "usr", 100, 1))
                 pltpaths.append(plotter.plot_2DHist(logObjPile, dsname, "epoch", "send", 100, 1))
                 pltpaths.append(plotter.plot_2DHist(logObjPile, dsname, "epoch", "recv", 100, 1))
 
+                #Remove(1)
                 #Summary pile stores information to be displayed with graph
                 summaryPile = updt_summary(summaryPile, dsname, bad_jobs, (dbsnevts-cms4nevts), pltpaths, logObjPile)
             except ValueError as error:
-                print(error)
-                print("Skipped: " + dsname)
-                print("Logfile info:")
-                print("Compiled logfiles: " + str(len(logObjPile)))
-                print("Logfile information: ") 
-                try:
-                    print(logObjPile[0])
-                except KeyError:
-                    print("None")
                 pass
 
     with open("static/summaryinfo.json", 'w') as fhout:
