@@ -21,9 +21,9 @@ def get_underscored(dsname):
 def updt_summary(summaryPile, dsname, bad_jobs, missing_evts, pltpaths, logObjPile):
     name = get_underscored(dsname)
     summaryPile[name] = {
-        "Plots":pltpaths,
-        "Jobs not done":bad_jobs,
-        "Missing Events":(missing_evts), 
+        "plots":pltpaths,
+        "jobs_not_done":bad_jobs,
+        "missing_events":(missing_evts), 
         }
 
     return summaryPile
@@ -43,6 +43,7 @@ def parse_stats(jsonpath, logpath):
         cms4nevts = 0
         dbsnevts = counts[dsname]["dbs"]
 
+        #logObjPile = {} #Note_1: if you use this delete other instance of this in "if dbsnevts != cms4nevts" statement
         bad_jobs = {}
         for iout in sample.keys():
             job = sample[iout]
@@ -60,11 +61,13 @@ def parse_stats(jsonpath, logpath):
             innames, innevents = zip(*inputs)
             nevents = sum(innevents)
 
-            bad_jobs["Job {0}".format(iout)] = {
+            bad_jobs[iout] = {
                 "retries":retries,
                 "inputs":len(inputs),
                 "events":nevents
             }
+
+            #logObjPile = plotter.get_json_files(logObjPile, job[condor_jobs], ".out", logpath) #See Note_1
 
             print "[{0}] Job {1} is not done. Retried {2} times.".format(dsname, iout, retries)
             print "   --> {0} inputs with a total of {1} events".format(len(inputs),nevents)
@@ -91,11 +94,11 @@ def parse_stats(jsonpath, logpath):
                 #Plot Functions:
                 '''
                     2D Graphs:
-                        norm_toggle = 1 -> scale x-values such that max x-value is 1
-                        norm_toggle = 0 -> plot x and y values as they are
-
                         Profile: plotter.plot_Profile(logObjPile, xkey, ykey, bins, norm_toggle)
                         2DHist: plotter.plot_2DHist(logObjPile, xkey, ykey, bins, norm_toggle)
+
+                        norm_toggle = 1 -> scale x-values such that max x-value is 1
+                        norm_toggle = 0 -> plot x and y values as they are
                     
                     1D Graphs:
                         1DHist; plotter.plot_1DHist(logObjPile, xkey, bins)

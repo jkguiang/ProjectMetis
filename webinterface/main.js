@@ -46,7 +46,7 @@ function get_plots(data){
         $("#details_"+i).append("<p id='plots_"+i+"'></p>");
         toappend = "";
         if (data.hasOwnProperty(key)){
-            pltLst = data[key].Plots;
+            pltLst = data[key].plots;
             for (var j = 0; j < pltLst.length; j++){
                 toappend+="<img src="+pltLst[j]+" width=400 height=300>";
             }
