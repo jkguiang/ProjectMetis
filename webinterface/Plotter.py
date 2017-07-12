@@ -202,4 +202,3 @@ def plot_Profile(logObjPile, title, xkey, ykey, bins, norm_toggle):
 if __name__ == "__main__":
     fPile = get_log_files("/home/jguiang/ProjectMetis/log_files/tasks", ".out")
     logObjPile = tqdm_parse_log_files(fPile)
-

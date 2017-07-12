@@ -42,6 +42,11 @@ def log_parser(logName):
                     elif "usr" in splitLine[0]:
                         for i in splitLine:
                             trim = i.split("\"") #getLine
+                            if trim[1] == "used":
+                                if "used_mem" not in headers:
+                                    trim[1] = "used_mem"
+                                else:
+                                    trim[1] = "used_swp"
                             headers.append(trim[1])
                         for i in headers:
                             logDict[i] = []
